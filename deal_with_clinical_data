@@ -11,11 +11,14 @@ cxml <- xmlParse(file = "nationwidechildrens.org_clinical.TCGA-AO-A0JM.xml", enc
 
 cxml1 <- xmlParse(file = "nationwidechildrens.org_clinical.TCGA-4H-AAAK.xml", encoding = "UTF-8")
 
-#######################################################################################################################
-## first we have to understand the structure of the clinical xml files
 
 xmltop <- xmlRoot(cxml)
 xmltop1 <- xmlRoot(cxml1)
+
+
+#######################################################################################################################
+## first we have to understand the structure of the clinical xml files
+
 
 xmlSize(xmltop)
 ##[1] 2
@@ -102,6 +105,7 @@ xmlSApply(xmltop[[2]][[104]][[1]], xmlValue)
 ## second we extract the clinical information from the xml file and turn it into a dataframe
 
 easy_result <- c(xmlSApply(xmltop[[1]], xmlValue),xmlSApply(xmltop[[2]], xmlValue)[1:101])
+con_test <- c()
 
 col_names_need <- names(easy_result)
 tianchong <- rep("haha", length(col_names_need))
@@ -110,14 +114,74 @@ data_all <- t(data.frame(tianchong))
 colnames(data_all) <- col_names_need
 
 
+
+cfile_lists <- list.files("./breast_clinical")
+
+for (i in cfile_lists){
+  test_xml <- xmlParse(file = paste("./breast_clinical", i, sep = "/"), encoding = "UTF-8")
+  test_top <- xmlRoot(test_xml)
+  con_test <- c(xmlSApply(test_top[[1]], xmlValue),xmlSApply(test_top[[2]], xmlValue)[1:101])
+  data_all <- rbind(data_all, con_test)
+}
+
+write.table(data_all, file = "tcga_breast_clinical.txt", sep = "\t", quote = F, row.names = F)
+
 #######################################################################################################################
 ## third the follow_ups, drugs and radiations they contain subterms, so it is not to directly turn it into a dataframe
 ## we choose to extract there information to independent tables.
 
+setwd("C:/Users/WL/Desktop/breast_clinical")
+
+for (i in cfile_lists){
+  drug_tianchong <- rep("haha", 22)
+  drug_table <- t(data.frame(drug_tianchong))
+  colnames(drug_table) <- names(xmlSApply(xmltop[[2]][[103]][[1]], xmlValue))
+
+  radiation_tianchong <- rep("haha", 18)
+  radiation_table <- t(data.frame(radiation_tianchong))
+  colnames(radiation_table) <- names(xmlSApply(xmltop[[2]][[104]][[1]], xmlValue))
+
+
+  test_xml <- xmlParse(file = paste(".", i, sep = "/"), encoding = "UTF-8")
+  test_top <- xmlRoot(test_xml)
+  dirname <- substring(i, 34, 45)
+  dir.create(paste(".", dirname, sep = "/"))
+  setwd(paste(".", dirname, sep = "/"))
+  
+  if(xmlSize(test_top[[2]][[102]]) >= 1){
+    for (m in 1:xmlSize(test_top[[2]][[102]])){
+      write.table(xmlSApply(test_top[[2]][[102]][[m]], xmlValue), file = paste("follow_up_", m, ".txt", sep = ""), quote = F, sep = "\t")
+    }
+  } else {
+    print(paste(dirname, "has no follow up records!", sep = " "))
+  }
+  
+  if(xmlSize(test_top[[2]][[103]]) >= 1){
+    for (n in 1:xmlSize(test_top[[2]][[103]])){
+      drug_table <- rbind(drug_table, xmlSApply(test_top[[2]][[103]][[n]], xmlValue))
+    }
+    write.table(drug_table, file = paste(dirname, "_drug_table.txt"), sep = "\t", quote = F, row.names = F)
+  } else {
+    write.table(drug_table, file = paste(dirname, "_drug_table.txt"), sep = "\t", quote = F, row.names = F)
+  }
+  
+  if(xmlSize(test_top[[2]][[104]]) >= 1){
+    for (g in 1:xmlSize(test_top[[2]][[104]])){
+      radiation_table <- rbind(radiation_table, xmlSApply(test_top[[2]][[104]][[g]], xmlValue))
+    }
+  write.table(radiation_table, file = paste(dirname, "_radiation_table.txt"), sep = "\t", quote = F, row.names = F)
+  } else {
+  write.table(radiation_table, file = paste(dirname, "_radiation_table.txt"), sep = "\t", quote = F, row.names = F)
+  }
+  setwd("./..")
+}
 
 
 
 
+  for (m in 1:0){
+    print(m)
+  }
 
 
 
