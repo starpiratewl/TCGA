@@ -1,12 +1,129 @@
 ## clinical data downloaded from TCGA is xml files, we try to extract useful information from these xmls and export it as txt or xls file.
 
-
+#######################################################################################################################
+## import the xml files
 setwd("C:\\Users\\WL\\Desktop")
 
 library(XML)
 
 
 cxml <- xmlParse(file = "nationwidechildrens.org_clinical.TCGA-AO-A0JM.xml", encoding = "UTF-8")
+
+#######################################################################################################################
+## first we have to understand the structure of the clinical xml files
+
+xmltop <- xmlRoot(cxml)
+
+xmlSize(xmltop)
+##[1] 2
+xmlName(xmltop[[1]])
+##[1] "admin"
+xmlName(xmltop[[2]])
+##[1] "patient"
+## the record is broadly divided into two parts,first is admin, second is patient
+
+xmlSize(xmltop[[1]])
+##[1] 9
+xmlName(xmltop[[1]])
+##[1] "admin"
+## This is broad information about the hospital and others of this case
+
+xmlSize(xmltop[[2]])
+##[1] 104
+xmlName(xmltop[[2]])
+##[1] "patient"
+## This is specific clinical information about this case
+
+## in this clinical dataset, admin part and the 1-101 in the patient part are relatively easy to decode, because they didn't contain any sub terms
+## so we need further understanding of the 102-104 in the patient part which have complicated sub structures
+
+xmlSize(xmltop[[2]][[102]])
+##[1] 2
+xmlName(xmltop[[2]][[102]])
+##[1] "follow_ups"
+## This is the times of following up , here is two
+
+xmlSize(xmltop[[2]][[103]])
+##[1] 5
+xmlName(xmltop[[2]][[103]])
+##[1] "drugs"
+## This is the times of chemotherapy, here is five
+
+xmlSize(xmltop[[2]][[104]])
+##[1] 1
+xmlName(xmltop[[2]][[104]])
+##[1] "radiations"
+## This is the times of radiotherapy, here is one
+
+
+
+xmlSize(xmltop[[2]][[102]][[1]])
+##[1] 63
+##xmlSize(xmltop[[2]][[102]][[2]])
+[1] 45
+## This means that this patient has been followed up for two times, but the content was a little different
+
+
+xmlSize(xmltop[[2]][[103]][[1]])
+##[1] 22
+xmlSize(xmltop[[2]][[103]][[2]])
+##[1] 22
+xmlSize(xmltop[[2]][[103]][[3]])
+##[1] 22
+xmlSize(xmltop[[2]][[103]][[4]])
+##[1] 22
+xmlSize(xmltop[[2]][[103]][[5]])
+##[1] 22
+## This mean 5 times of medicine have been recorded and each is submitted with the same structure, that is good news for extracting
+
+
+
+xmlSize(xmltop[[2]][[104]][[1]])
+##[1] 18
+xmlSApply(xmltop[[2]][[104]][[1]], xmlValue)
+##                 bcr_radiation_barcode                     bcr_radiation_uuid        days_to_radiation_therapy_start          days_to_radiation_therapy_end                         radiation_type 
+##                  "TCGA-AO-A0JM-R3229" "7e8ccc49-defa-4a33-bd6a-edb852153291"                                  "260"                                  "294"                        "EXTERNAL BEAM" 
+##                  radiation_type_notes                       radiation_dosage                                  units                           numfractions                anatomic_treatment_site 
+##                                    ""                                "10000"                                  "cGy"                                   "25"                        "Regional site" 
+##                    regimen_indication               regimen_indication_notes            radiation_treatment_ongoing                          course_number                    measure_of_response 
+##                            "ADJUVANT"                                     ""                                   "NO"                                    "1"                                     "" 
+##                day_of_form_completion               month_of_form_completion                year_of_form_completion 
+                                  "20"                                    "9"                                 "2010" 
+## here is the structure of recording the radiationtherapy, it contains 18 sub terms
+
+
+
+
+
+#######################################################################################################################
+## second we extract the clinical information from the xml file and turn it into a dataframe
+
+
+
+
+#######################################################################################################################
+## third the follow_ups, drugs and radiations they contain subterms, so it is not to directly turn it into a dataframe
+## we choose to extract there information to independent tables.
+
+
+
+
+
+
+
+
+
+################################################################################
+## don't know the difference between xmlParse and xmlTreeParse
+################################################################################
+cxml1 <- xmlTreeParse(file = "nationwidechildrens.org_clinical.TCGA-AO-A0JM.xml", encoding = "UTF-8", useInternal = T)
+
+xmltop1 <- xmlRoot(cxml1)
+
+
+
+
+
 
 
 #形成根目录列表数据
@@ -52,7 +169,23 @@ saveXML(xmltop, file="out.xml",encoding="UTF-8")
 
 
 
+xmlSApply(xmltop,xmlValue)
+
+
+
+
+
+
+
+## 取值前三列的话，代码后添加  %>% .[1:3] 就行了。
+rvest::html('http://data.eastmoney.com/cjsj/cpi.html') %>% html_table(fill=TRUE) %>% .[[1]] %>% na.omit(.)
+
+
+
+
+##############################
 ##xml格式转dataframe
+##############################
 
 test <- xmlToDataFrame(cxml) #第一种方式，直接用xmlToDataFrame()函数
 write.table(test, file = "test_xml.txt", sep = "\t", quote = F)
