@@ -9,10 +9,13 @@ library(XML)
 
 cxml <- xmlParse(file = "nationwidechildrens.org_clinical.TCGA-AO-A0JM.xml", encoding = "UTF-8")
 
+cxml1 <- xmlParse(file = "nationwidechildrens.org_clinical.TCGA-4H-AAAK.xml", encoding = "UTF-8")
+
 #######################################################################################################################
 ## first we have to understand the structure of the clinical xml files
 
 xmltop <- xmlRoot(cxml)
+xmltop1 <- xmlRoot(cxml1)
 
 xmlSize(xmltop)
 ##[1] 2
@@ -98,7 +101,13 @@ xmlSApply(xmltop[[2]][[104]][[1]], xmlValue)
 #######################################################################################################################
 ## second we extract the clinical information from the xml file and turn it into a dataframe
 
+easy_result <- c(xmlSApply(xmltop[[1]], xmlValue),xmlSApply(xmltop[[2]], xmlValue)[1:101])
 
+col_names_need <- names(easy_result)
+tianchong <- rep("haha", length(col_names_need))
+
+data_all <- t(data.frame(tianchong))
+colnames(data_all) <- col_names_need
 
 
 #######################################################################################################################
