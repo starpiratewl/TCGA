@@ -1,0 +1,13 @@
+setwd("/home/liang/biosoft/firehose")
+
+## download GBM via firehose from tcga on 2017/11/13
+firehose_get -tasks clinical stddata latest gbm
+bash:command not found
+
+## we have to use the following command, because we have not set the environment
+./firehose_get -tasks clinical stddata latest gbm
+
+./firehose_get -tasks clinical stddata latest gbm
+
+
+
