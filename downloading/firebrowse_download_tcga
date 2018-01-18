@@ -9,3 +9,100 @@ bash:command not found
 
 ./firehose_get -tasks clinical stddata latest gbm
 
+##############################################################################################################
+## the guidance comes from http://www.biotrainee.com/thread-822-1-2.html
+##############################################################################################################
+## to avert the breakdown of this website, I record the content here:
+##############################################################################################################
+
+我最喜欢的就是这个了，它很简单，就是把wget工具给包装一下，所有的文件都以目录的形式存放着：
+https://gdac.broadinstitute.org/runs/stddata__latest/
+https://gdac.broadinstitute.org/runs/analyses__latest/
+
+网站是：https://gdac.broadinstitute.org/ 
+客户端工具是firehose_get   ，https://confluence.broadinstitute.org/display/GDAC/Download
+
+这个客户端工具是firehose_get 下载方式是：~/biosoft/firehose/firehose_get -tasks clinical analyses latest brca ，原理是 不完全匹配它的网页url。比如我选择了data，就代表了stddata，但是只有两个选择，另外一个就是analyses，也就是说要么下载原始level3数据，要么下载分析后的。
+
+其余的也是如此，如果 -tasks指定了 下载的数据类型选择了rna，那么mirna,mrna都会一起下载的。指定 clinical 就只能下载 clinical 相关数据了。
+
+至于latest就不用说了，除非你有特殊要求，否则都是选择这个。
+
+主要是在网站上面直接查看他们的分析结果，非常详尽的报告。
+比如关于BRCA的结果包括：http://gdac.broadinstitute.org/r ... eports/cancer/BRCA/
+
+如果你非要自己下载数据，才用客户端工具是firehose_get！
+客户端工具本质上就是根据几个定义好的参数，去它自己的电脑里面的文件夹里面找到你想要的文件，用wget下载即可！
+
+比如我想下载BRCA的临床信息，就用： 
+#############################
+cd ~/biosoft
+# [url=https://www.cog-genomics.org/plink2/data#merge_list]https://www.cog-genomics.org/plink2/data#merge_list[/url]
+mkdir firehose && cd firehose 
+wget [url=http://gdac.broadinstitute.org/runs/code/firehose_get_latest.zip]http://gdac.broadinstitute.org/runs/code/firehose_get_latest.zip[/url]
+unzip firehose_get_latest.zip 
+~/biosoft/firehose/firehose_get
+~/biosoft/firehose/firehose_get -tasks clinical analyses latest brca 
+#############################
+
+就会形成/analyses__2016_01_28/BRCA/20160128的文件夹来存储刚才下载的数据，但是它默认下载的数据有点多！
+都是临床信息跟其它数据的关联分析，包括甲基化，蛋白，mRNA，miRNA等表达数据分组，等等。
+
+上面的参数是可以调整  firehose_get -tasks clinical analyses latest brca  
+
+第1个参数我们可以用-t这个参数来指定下载的数据类型，可以是mut/rna/mutsig/gistic等各种数据，至于这些单词代表什么意义，需要自己去看说明书啦！我这里选择clinical咯，临床信息！
+第2个参数，一般就是analyses，用来下载broad的分析结果，可以换成'stddata'用来下载输入数据！
+第3个参数是选择时间，一般就用最新的latest即可！
+最后一个参数是选择癌症种类，可以从下面选择，我这里选择的是brca做测试！
+ACC  BLCA  BRCA  CESC  COAD  COADREAD  DLBC  ESCA          GBM  HNSC  KICH  KIRC  KIRP  LAML  LGG  LIHC          LUAD  LUSC  OV  PAAD  PANCANCER  PANCAN8  PANCAN12  PRAD          READ  SARC  SKCM  STAD  THCA  UCEC  UCS  
+
+
+那个-task指定的下载数据类型是有限的：
+Clinical        CN        LowP        Methylation        mRNA        mRNASeq        miR        miRSeq        RPPA        MAF        rawMAF
+而且不是每个数据都是所有样本都包括，比如mRNA数据，就是芯片测是，在brca就五百多个，但是mRNA-seq的数据有一千多个，这个需要注意！人家网站上面列出了什么数据，你就下载什么数据！
+http://firebrowse.org/
+不要瞎给一些参数！
+
+每一种数据，都会下载3个压缩包文件：
+aux
+Level_4
+mage-tab
+
+每个压缩包解压开了，都是一堆文件。
+需要自己打开仔细查看具体内容，好好理解！
+尤其是gdac.broadinstitute.org_BRCA-TP.Correlate_Clinical_vs_mRNAseq.Level_4 里面有大家最关系的所有数据结果，broad已经做好了生存分析！
+它自动化做的批量生存分析用的数据是：
+
+Expresson data file = BRCA-TP.uncv2.mRNAseq_RSEM_normalized_log2.txt
+Clinical data file = BRCA-TP.merged_data.txt
+Number of patients = 1093
+Number of genes = 18296
+Number of clinical features = 12
+
+
+当然，如果你第二个参数用的stddata，就会下载纯正的临床数据，而不是临床数据与其它数据的生存分析结果！当然，文件还是有点多，需要耐心看，认真理解；gdac.broadinstitute.org_BRCA.Clinical_Pick_Tier1.Level_4.2016012800.0.0/BRCA.clin.merged.picked.txt
+
+
+所有名词详解：https://docs.gdc.cancer.gov/Data_Dictionary/viewer/ 
+我再三强调，自学，搜索！
+
+本质上其实就是去它们broad的远程电脑里面根据路径规则去下载东西而已，https://gdac.broadinstitute.org/runs/ https://gdac.broadinstitute.org/runs/stddata__2016_07_15/
+https://gdac.broadinstitute.org/runs/stddata__latest/
+https://gdac.broadinstitute.org/runs/analyses__2016_01_28/
+
+
+analyses or stddata 
+
+因为就是保证了wget工具，所以下面这两个命令是等价的
+#############################
+wget -c -r -np -nH -k -L -p -A "*snp_6*hg19*" [url=http://gdac.broadinstitute.org/runs/stddata__2016_01_28/data/BRCA/20160128/]http://gdac.broadinstitute.org/r ... data/BRCA/20160128/[/url]
+./firehose_get -tasks snp_6 stddata latest brca
+#############################
+
+
+wget的详细介绍见：http://www.bio-info-trainee.com/1039.html
+其中还可以加入--cut-dirs 5
+
+来避免创建一层一层的文件夹
+
+
