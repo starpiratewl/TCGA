@@ -6,7 +6,6 @@ setwd("C:\\Users\\WL\\Desktop")
 
 library(XML)
 
-
 cxml <- xmlParse(file = "nationwidechildrens.org_clinical.TCGA-AO-A0JM.xml", encoding = "UTF-8")
 
 cxml1 <- xmlParse(file = "nationwidechildrens.org_clinical.TCGA-4H-AAAK.xml", encoding = "UTF-8")
@@ -14,7 +13,6 @@ cxml1 <- xmlParse(file = "nationwidechildrens.org_clinical.TCGA-4H-AAAK.xml", en
 
 xmltop <- xmlRoot(cxml)
 xmltop1 <- xmlRoot(cxml1)
-
 
 #######################################################################################################################
 ## first we have to understand the structure of the clinical xml files
@@ -112,7 +110,6 @@ tianchong <- rep("haha", length(col_names_need))
 
 data_all <- t(data.frame(tianchong))
 colnames(data_all) <- col_names_need
-
 
 
 cfile_lists <- list.files("./breast_clinical")
@@ -240,12 +237,7 @@ saveXML(xmltop, file="out.xml",encoding="UTF-8")
 
 
 
-
-
 xmlSApply(xmltop,xmlValue)
-
-
-
 
 
 
